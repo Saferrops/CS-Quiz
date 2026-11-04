@@ -63,7 +63,7 @@
       <!-- 1. STUDENT JOIN CARD -->
       <div id="studentJoinCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
         <h2 class="text-xl font-bold text-white mb-1">Join Live Classroom Quiz</h2>
-        <p class="text-xs text-slate-400 mb-5">Enter the Room Code displayed on the projector and your real Full Name or Roll Number. Works seamlessly across any mobile data or Wi-Fi network.</p>
+        <p class="text-xs text-slate-400 mb-5">Enter the Room Code displayed on the projector and your real Full Name or Roll Number. Works on all modern mobile browsers.</p>
         
         <div class="space-y-4">
           <div>
@@ -130,4 +130,1225 @@
         <h3 class="text-lg font-bold text-amber-400 mb-1">Oral Spotlight Round Active!</h3>
         <p class="text-sm text-slate-300 mb-3"><strong id="spotlightChosenStudentName" class="text-white"></strong>'s device is ringing right now!</p>
         <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-left">
-          <span class="text-[11px] uppercase tracking-wider text-slate-500
+          <span class="text-[11px] uppercase tracking-wider text-slate-500 font-bold block mb-1">Spotlight Question on the Floor:</span>
+          <p id="otherSirenQuestionText" class="text-sm text-slate-200 font-medium"></p>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PRESENTER / HOST CONSOLE (PIN PROTECTED)   -->
+    <!-- ========================================== -->
+    <section id="hostView" class="hidden space-y-6">
+      
+      <!-- HOST TOP CONTROL BAR -->
+      <div class="bg-slate-900 border border-indigo-500/40 rounded-2xl p-5 shadow-xl flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Live Room Code:</span>
+            <span id="hostRoomCodeDisplay" class="font-mono text-xl font-black bg-indigo-950 border border-indigo-500/40 text-white px-3 py-0.5 rounded-lg">---</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1">Profanity filter & duplicate-name lock active. You can also kick any student from the right panel.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="sendNextMCQ()" id="nextQBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-indigo-600/20">
+            ▶️ Send Next Question (<span id="hostQCounter">0/20</span>)
+          </button>
+          <button onclick="triggerRandomSiren()" id="sirenBtn" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-amber-600/20">
+            🚨 Random Device Siren (<span id="hostSirenCounter">5</span> left)
+          </button>
+          <button onclick="broadcastLeaderboard()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-emerald-600/20">
+            🏆 Show Leaderboard
+          </button>
+          <button onclick="addDemoStudents()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-2.5 rounded-xl border border-slate-700 transition" title="Simulate 12 students for testing">
+            +12 Demo Classmates
+          </button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- LEFT 2 COLUMNS: ACTIVE QUESTION / SIREN MONITOR -->
+        <div class="lg:col-span-2 space-y-6">
+          
+          <!-- HOST ACTIVE MCQ DISPLAY -->
+          <div id="hostQuestionMonitor" class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800">
+              <div class="flex items-center gap-2">
+                <span id="hostActiveQNum" class="text-xs font-bold uppercase px-2.5 py-1 rounded bg-slate-800 text-slate-300">Lobby Open</span>
+                <span id="hostDifficultyBadge" class="hidden text-xs font-bold uppercase px-2.5 py-1 rounded"></span>
+                <span id="hostCoBadge" class="hidden text-xs font-medium px-2.5 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700"></span>
+              </div>
+              <span id="hostLiveResponsesCount" class="text-xs font-semibold text-indigo-400">0 / 0 Answered</span>
+            </div>
+
+            <h3 id="hostActiveQText" class="text-lg font-bold text-white mb-4">
+              Wait for students to join using the Room Code, then click "Send Next Question" to push Question 1 to all screens simultaneously.
+            </h3>
+
+            <div id="hostOptionsPreview" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+
+            <div id="hostExplanationBox" class="hidden mt-4 pt-4 border-t border-slate-800 text-xs text-slate-300 bg-slate-950/60 p-3.5 rounded-xl border">
+              <strong class="text-emerald-400 uppercase tracking-wider block mb-1">Presenter Answer Key & Rationale (Hidden from Students):</strong>
+              <span id="hostExplanationText"></span>
+            </div>
+          </div>
+
+          <!-- HOST SPOTLIGHT SIREN MONITOR & GRADING -->
+          <div id="hostSirenMonitor" class="hidden bg-amber-950/30 border-2 border-amber-500/60 rounded-2xl p-6">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-extrabold uppercase tracking-widest bg-amber-500 text-slate-950 px-3 py-1 rounded-full">
+                🚨 LIVE ORAL SPOTLIGHT ACTIVE
+              </span>
+              <span id="hostSirenDifficulty" class="text-xs font-bold text-amber-300"></span>
+            </div>
+            <p class="text-sm text-slate-300 mb-2">
+              Ringing Device: <strong id="hostSelectedStudentName" class="text-white text-base underline"></strong>
+            </p>
+            <div class="bg-slate-950 border border-amber-500/30 rounded-xl p-4 mb-4">
+              <p id="hostSirenQText" class="text-base font-bold text-white mb-2"></p>
+              <p class="text-xs text-emerald-400 font-semibold mb-1">Expected Rubric / Key Points (Unit IV):</p>
+              <p id="hostSirenRubric" class="text-xs text-slate-300 leading-relaxed"></p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <button onclick="gradeOralAnswer(true)" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition">
+                ✅ Correct Spoken Answer (+1 Pt & Mark Answered)
+              </button>
+              <button onclick="gradeOralAnswer(false)" class="bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition">
+                ❌ Needs Improvement (0 Pts, Mark Attempted)
+              </button>
+              <button onclick="triggerRandomSiren()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-700">
+                🔄 Re-spin Another Device
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: CONNECTED STUDENTS LIST -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col h-[420px]">
+          <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+            <h4 class="font-bold text-sm text-white">Connected Devices (Verified)</h4>
+            <span id="connectedCountBadge" class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-0.5 rounded-full font-bold">0 joined</span>
+          </div>
+          <div id="hostStudentList" class="space-y-2 overflow-y-auto flex-1 pr-1 text-xs">
+            <p class="text-slate-500 text-center py-8">No devices joined yet.</p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- SHARED LEADERBOARD VIEW (TOP 10 TO LEAST)  -->
+    <!-- ========================================== -->
+    <section id="leaderboardSection" class="hidden mt-8 bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+      <div class="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Final Standings</span>
+          <h2 class="text-2xl font-black text-white">Classroom Leaderboard (Maximum to Least Answered)</h2>
+        </div>
+        <button onclick="hideLeaderboard()" id="closeLeaderboardBtn" class="hidden text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded-lg border border-slate-700">
+          Back to Console
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- TOP 10 PODIUM -->
+        <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-5">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-emerald-400 mb-4 flex items-center gap-2">
+            <span>🏆</span> Top 10 Performers (Maximum Answered & Score)
+          </h3>
+          <div id="top10Container" class="space-y-2.5"></div>
+        </div>
+
+        <!-- COMPLETE CLASS RANKING (DOWN TO WHO ANSWERED THE LEAST) -->
+        <div class="bg-slate-950 border border-slate-800 rounded-xl p-5">
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-slate-300 mb-4 flex items-center gap-2">
+            <span>📊</span> Full Participation Log (Ranked Down to Least Answered)
+          </h3>
+          <div id="fullRankingContainer" class="space-y-2 max-h-[420px] overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const SECRET_HOST_PIN = "2026";
+    let isHostAuthenticated = false;
+
+    function normalizeName(str) {
+      return (str || "").trim().replace(/\s+/g, " ").toLowerCase();
+    }
+
+    const BLOCKED_SUBSTRINGS = [
+      "fuck", "fuk", "fck", "fvck", "fuxk", "phuck", "motherfuck", "mofo",
+      "shit", "shyt", "bullshit", "bitch", "biatch", "bich", "bastard",
+      "asshole", "arsehole", "dick", "d1ck", "cock", "c0ck", "penis", "vagina",
+      "pussy", "cunt", "whore", "slut", "skank", "boob", "tits", "titties",
+      "nigger", "nigga", "faggot", "fag", "retard", "rapist", "rape", "porn",
+      "hentai", "sex", "horny", "orgasm", "dildo", "blowjob", "handjob",
+      "cumshot", "jizz", "wank", "masturbat", "erection", "scrotum", "testicle",
+      "pedo", "pedophile", "incest", "nazi", "hitler", "prostitut", "hooker",
+      "madarchod", "maderchod", "maadarchod", "bhenchod", "behenchod", "benchod",
+      "bahinchod", "betichod", "bhadwa", "bhadwe", "bhadva", "bhosdi", "bhosda",
+      "bhosdike", "bhosad", "bsdk", "chutiya", "chutia", "chootiya", "choot",
+      "chut", "gaand", "gand", "gaandu", "gandu", "lauda", "lawda", "lavda",
+      "loda", "lodu", "lund", "randi", "raand", "randwa", "harami", "haramkhor",
+      "haramzada", "kamina", "kaminey", "kutiya", "suar", "jhaat", "jhatu",
+      "jhaatu", "chinal", "chakka", "hijra", "mutthal", "muthal", "pelna"
+    ];
+
+    const BLOCKED_EXACT_TOKENS = [
+      "mc", "bc", "mkc", "bkl", "tmkc", "bcbc", "mcmc", "wtf", "stfu", "gtfo",
+      "lmao", "af", "ass", "cum", "tit", "hoe", "ho", "gay", "bra", "pimp",
+      "anus", "butt", "poop", "pee", "fart", "hell", "damn", "crap", "suck",
+      "admin", "host", "teacher", "professor", "anonymous", "unknown"
+    ];
+
+    function validateStudentName(rawName) {
+      const clean = (rawName || "").trim().replace(/\s+/g, " ");
+
+      if (clean.length < 3) {
+        return { valid: false, reason: "Name must be at least 3 characters long." };
+      }
+      if (clean.length > 32) {
+        return { valid: false, reason: "Name cannot exceed 32 characters." };
+      }
+
+      if (!/^[a-zA-Z0-9\s.\-()]+$/.test(clean)) {
+        return {
+          valid: false,
+          reason: "Special symbols are not allowed. Please use only letters, spaces, and your Roll Number."
+        };
+      }
+
+      const alphaCount = (clean.match(/[a-zA-Z]/g) || []).length;
+      if (alphaCount < 2) {
+        return {
+          valid: false,
+          reason: "Please include your actual name using letters (not just numbers)."
+        };
+      }
+
+      const leetNormalized = clean
+        .toLowerCase()
+        .replace(/0/g, "o")
+        .replace(/1/g, "i")
+        .replace(/3/g, "e")
+        .replace(/4/g, "a")
+        .replace(/5/g, "s")
+        .replace(/7/g, "t")
+        .replace(/8/g, "b");
+
+      const collapsedNoSpaces = leetNormalized
+        .replace(/[^a-z]/g, "")
+        .replace(/(.)\1{2,}/g, "$1$1");
+      const strictDeduped = collapsedNoSpaces.replace(/(.)\1+/g, "$1");
+      const rawAlphaOnly = clean.toLowerCase().replace(/[^a-z]/g, "");
+
+      for (const badWord of BLOCKED_SUBSTRINGS) {
+        if (
+          rawAlphaOnly.includes(badWord) ||
+          collapsedNoSpaces.includes(badWord) ||
+          strictDeduped.includes(badWord)
+        ) {
+          return {
+            valid: false,
+            reason: "Inappropriate, explicit, or offensive words are strictly prohibited. Please enter your real classroom name."
+          };
+        }
+      }
+
+      const rawTokens = clean.toLowerCase().split(/[\s.\-()]+/).filter(Boolean);
+      const leetTokens = leetNormalized.split(/[\s.\-()]+/).filter(Boolean);
+
+      for (const token of [...rawTokens, ...leetTokens]) {
+        if (BLOCKED_EXACT_TOKENS.includes(token)) {
+          return {
+            valid: false,
+            reason: `"${token.toUpperCase()}" is not permitted as a student name. Please enter your real Full Name or Roll Number.`
+          };
+        }
+      }
+
+      return { valid: true, cleanName: clean };
+    }
+
+    const mcqQuestions = [
+      {
+        id: 1,
+        difficulty: "Easy",
+        co: "CO01 • Remember/Understand",
+        q: "According to the LSRW framework in Unit IV, how do speaking and professional writing primarily reinforce one another?",
+        options: [
+          "Both are active productive skills that rely on structured thought and audience adaptation, though writing requires explicit syntactic completeness.",
+          "Writing is a verbatim transcription of spoken phonetics mapped directly onto formal corporate templates.",
+          "Speaking prioritizes lexical density and archival permanence, whereas writing prioritizes spontaneous tonal modulation.",
+          "They operate independently: speaking is governed by functional grammar while writing is governed solely by visual layout."
+        ],
+        answer: 0,
+        rationale: "Both speaking and writing are productive LSRW skills that organize ideas for an audience, with writing demanding greater structural precision and permanence."
+      },
+      {
+        id: 2,
+        difficulty: "Medium",
+        co: "CO03 • Analyze/Create",
+        q: "In Unit IV's Course Outcome mapping with Bloom's Taxonomy, which activity directly exemplifies CO03 (Analyze & Create) rather than CO02 or CO04?",
+        options: [
+          "Deconstructing a corporate communication case study and authoring a structured analytical report.",
+          "Drafting a routine business email using standard subject line and salutation conventions.",
+          "Conducting a structured peer review to evaluate the tone and objectivity of a colleague's job application.",
+          "Recalling the standard parts of a business letter and substituting informal vocabulary with formal equivalents."
+        ],
+        answer: 0,
+        rationale: "Slide 24 maps CO03 (Analyze–Create) specifically to case study analysis and report writing, whereas email drafting is CO02 and peer review is CO04."
+      },
+      {
+        id: 3,
+        difficulty: "Medium",
+        co: "CO02 • Apply/Analyze",
+        q: "Which revision best demonstrates the Unit IV principle of Functional Grammar & Formal Vocabulary without sliding into stiff, archaic legalese?",
+        options: [
+          "\"Please review the attached quarterly expenditure breakdown and share your approval by Friday.\"",
+          "\"Hereby find enclosed herewith the aforementioned expenditure figures for your esteemed perusal.\"",
+          "\"Just dropping the quarterly spend numbers here—let me know if we're good to go by Friday.\"",
+          "\"Pursuant to our prior verbal discourse, the monetary outlays have been compiled for ratification.\""
+        ],
+        answer: 0,
+        rationale: "Professional writing balances formal vocabulary and grammatical accuracy with plain, clear, modern conciseness—avoiding both casual slang and archaic clichés."
+      },
+      {
+        id: 4,
+        difficulty: "Tough",
+        co: "CO03 • Analyze",
+        q: "While condensing a 600-word article into a 200-word Précis, a writer retains the author's exact thesis sentence, removes illustrative anecdotes, converts first-person statements into third-person, and adds one sentence evaluating why the author's argument is timely. Which rule of Précis writing was violated?",
+        options: [
+          "Both lifting a sentence verbatim from the original passage and injecting personal commentary violate précis objectivity and rewriting rules.",
+          "Converting first-person statements into third-person Indirect Speech violates the fidelity requirement of a précis.",
+          "Reducing the passage to one-third of its original length is too brief to preserve structural coherence.",
+          "Omitting illustrative anecdotes removes essential factual evidence required in the condensed version."
+        ],
+        answer: 0,
+        rationale: "A précis must be rewritten in the writer's own words (no verbatim copying) and must remain strictly faithful to the original text without external opinion or evaluation."
+      },
+      {
+        id: 5,
+        difficulty: "Medium",
+        co: "CO02 • Apply",
+        q: "During the 'Understand' and 'Condense' stages of Précis writing, how should a writer handle two consecutive paragraphs that provide three statistical case studies supporting a single main claim?",
+        options: [
+          "Synthesize the overarching conclusion of those statistics into a single concise statement while omitting the granular case examples.",
+          "Retain all three statistical figures in parentheses so the précis preserves 100% of the numerical data.",
+          "Replace the three case studies with a simpler hypothetical example of the writer's own invention.",
+          "Create three separate bullet points inside the précis to mirror the paragraph breaks of the source text."
+        ],
+        answer: 0,
+        rationale: "Précis writing requires abstracting core essential meaning into a continuous paragraph while eliminating repetitive illustrations and secondary statistical detail."
+      },
+      {
+        id: 6,
+        difficulty: "Tough",
+        co: "CO03 • Analyze",
+        q: "A paragraph in a technical report contains grammatically flawless sentences that all use smooth transitional words ('furthermore', 'consequently'), yet it introduces two unrelated operational recommendations midway through. Which core principle of Paragraph Writing is violated?",
+        options: [
+          "Unity — because every sentence in the paragraph fails to develop a single controlling idea.",
+          "Coherence — because logical bridges and transitional devices between sentences are absent.",
+          "Completeness — because the paragraph lacks a concluding sentence to restate the topic.",
+          "Chronological Order — because recommendations must always precede analytical findings."
+        ],
+        answer: 0,
+        rationale: "Transitional markers create surface Coherence, but introducing unrelated topics violates Paragraph Unity (sticking to one central controlling topic)."
+      },
+      {
+        id: 7,
+        difficulty: "Medium",
+        co: "CO02 • Analyze",
+        q: "In a feasibility report proposing a transition to automated inventory tracking, the section explaining how RFID sensors transmit real-time stock data uses one paragraph type, while the closing pitch urging board funding uses another. Which pair of paragraph types is used?",
+        options: [
+          "Expository followed by Persuasive",
+          "Descriptive followed by Narrative",
+          "Narrative followed by Expository",
+          "Persuasive followed by Descriptive"
+        ],
+        answer: 0,
+        rationale: "Explaining functional mechanisms and processes is Expository writing, whereas convincing decision-makers to approve funding is Persuasive writing."
+      },
+      {
+        id: 8,
+        difficulty: "Easy",
+        co: "CO01 • Remember",
+        q: "Beyond immediate message transmission, why do organizations still rely on formal Business Letters alongside instant digital messaging?",
+        options: [
+          "They establish a verifiable, legally admissible archival record while projecting institutional credibility.",
+          "They permit complex multi-page appendices that cannot be attached to electronic communications.",
+          "They eliminate the need for an inside address or formal salutation in external dealings.",
+          "They guarantee faster interpersonal feedback loops than synchronous communication channels."
+        ],
+        answer: 0,
+        rationale: "Slide 10 highlights that Business Letters serve as an official medium of communication, build professional image, and provide permanent record keeping."
+      },
+      {
+        id: 9,
+        difficulty: "Medium",
+        co: "CO01 • Understand",
+        q: "In standard formal business letter architecture, what is the precise placement and role of the 'Inside Address'?",
+        options: [
+          "Placed above the salutation on the left margin, identifying the specific recipient's name, designation, and organizational address.",
+          "Placed at the very top center of the page to identify the sender's corporate headquarters and contact details.",
+          "Placed immediately below the complimentary close to verify the signatory's department.",
+          "Placed on the outer envelope only, omitting it from the letter sheet to maintain visual brevity."
+        ],
+        answer: 0,
+        rationale: "The Heading contains the sender's address at the top, while the Inside Address precedes the Salutation and identifies the recipient."
+      },
+      {
+        id: 10,
+        difficulty: "Tough",
+        co: "CO02 • Analyze",
+        q: "How does a 'Modified Block' business letter layout differ structurally from a 'Semi-Block' layout?",
+        options: [
+          "Both align the date, complimentary close, and signature block to the right of center, but Semi-Block additionally indents the first line of each body paragraph.",
+          "Modified Block left-aligns every single element including the date and signature, whereas Semi-Block centers the body paragraphs.",
+          "Semi-Block places the inside address on the right margin, whereas Modified Block places the salutation at the bottom.",
+          "Modified Block indents every line of the inside address, which is actually the defining feature of the Indented style."
+        ],
+        answer: 0,
+        rationale: "Full Block left-aligns everything; Modified Block moves the Date, Complimentary Close, and Signature to the center/right; Semi-Block does the same PLUS indents body paragraphs."
+      },
+      {
+        id: 11,
+        difficulty: "Medium",
+        co: "CO02 • Apply",
+        q: "When drafting a formal Business Quotation in response to a prospective client's inquiry, why is specifying a 'validity period' alongside unit pricing and tax breakdowns critical?",
+        options: [
+          "It protects the supplier from raw material or market price fluctuations while setting a clear decision timeline for the buyer.",
+          "It converts the quotation directly into an irrevocable purchase order without requiring buyer confirmation.",
+          "It allows the seller to omit delivery terms and payment schedules until after an invoice is generated.",
+          "It fulfills a formatting requirement exclusive to the Indented layout of business correspondence."
+        ],
+        answer: 0,
+        rationale: "A quotation must exhibit precision, clarity, and commercial completeness—including itemized pricing, terms, and validity duration."
+      },
+      {
+        id: 12,
+        difficulty: "Medium",
+        co: "CO02 • Apply",
+        q: "Which combination of details is mandatory in a formal Letter Placing an Order to prevent fulfillment disputes?",
+        options: [
+          "Catalogue/model specification, exact quantity, agreed unit price, delivery deadline, shipping destination, and payment mode.",
+          "General product category, estimated budget range, company history, and a request for a free trial sample.",
+          "Only the quotation reference number and total payable amount, leaving shipping method to the vendor's discretion.",
+          "A narrative paragraph praising the vendor's catalogue followed by an open-ended delivery window."
+        ],
+        answer: 0,
+        rationale: "Slide 14 specifies that formal Orders must clearly define product specifications, quantity, agreed price, and delivery/payment terms."
+      },
+      {
+        id: 13,
+        difficulty: "Tough",
+        co: "CO04 • Evaluate",
+        q: "A procurement manager receives 40 damaged laboratory oscilloscopes and writes: 'Your packaging team is clearly incompetent; ship 40 replacements by tomorrow or face legal action.' Why does this violate Unit IV's Complaint Writing principles?",
+        options: [
+          "Effective complaint letters open courteously, state verifiable facts (invoice/batch numbers), avoid personal accusations, and propose a specific, reasonable remedy.",
+          "Complaint letters should never state a specific deadline or desired resolution, as doing so appears overly demanding.",
+          "A complaint should conceal the exact defect in the opening paragraph to maintain a buffer of goodwill until the postscript.",
+          "Formal complaints must be written exclusively as chronological resumes attached to an informal memo."
+        ],
+        answer: 0,
+        rationale: "Slide 15 emphasizes a polite opening, clear statement of the issue with facts, and a constructive request for resolution—avoiding hostile or accusatory tone."
+      },
+      {
+        id: 14,
+        difficulty: "Medium",
+        co: "CO03 • Analyze",
+        q: "How should a Job Application Cover Letter complement an attached Resume rather than merely repeating it?",
+        options: [
+          "The cover letter interprets how specific achievements on the resume solve the employer's targeted needs, whereas the resume provides a structured inventory of credentials.",
+          "The cover letter lists every academic grade in tabular order, whereas the resume is written in persuasive multi-paragraph prose.",
+          "The cover letter is a generic greeting note, whereas the resume contains the candidate's salary negotiation and notice period.",
+          "They contain identical text, except the cover letter uses a Functional layout and the resume uses a Block layout."
+        ],
+        answer: 0,
+        rationale: "An application letter introduces the candidate, highlights relevant qualifications persuasively for the specific role, and directs attention to the structured resume."
+      },
+      {
+        id: 15,
+        difficulty: "Tough",
+        co: "CO03 • Analyze",
+        q: "A final-year engineering student has strong CNC, CAD, and rapid-prototyping project skills developed across university labs, alongside two brief internships. Which Resume Format best highlights both their core technical competencies AND their consistent timeline?",
+        options: [
+          "Combination (Hybrid) format — pairing a prominent competency/skills matrix at the top with a reverse-chronological experience and education section.",
+          "Pure Chronological format — which buries specific lab and technical proficiencies inside long job descriptions.",
+          "Pure Functional format — which omits dates and institutional timelines entirely, often raising recruiter skepticism.",
+          "Modified Block format — which is a correspondence layout rather than a resume structure."
+        ],
+        answer: 0,
+        rationale: "Slide 16 identifies Chronological, Functional, and Combination formats; the Combination format spotlights core skill clusters while preserving a clear timeline."
+      },
+      {
+        id: 16,
+        difficulty: "Medium",
+        co: "CO02 • Apply",
+        q: "Which email subject line best adheres to Unit IV's professional E-mail Writing etiquette for an urgent project submission?",
+        options: [
+          "Action Required: Approval of Q4 Prototyping Budget [Ref: PRJ-402] – Due Nov 8",
+          "URGENT!! Please read and reply ASAP regarding budget",
+          "Quick question about our Friday meeting and the files",
+          "Budget Report Attached — Need Your Thoughts Soon"
+        ],
+        answer: 0,
+        rationale: "A high-impact subject line is specific, concise, professional, and immediately communicates the topic, reference, and action deadline without all-caps shouting."
+      },
+      {
+        id: 17,
+        difficulty: "Tough",
+        co: "CO04 • Evaluate",
+        q: "In Report Writing, which sentence demonstrates true 'Objectivity' (a core feature of a good report) as opposed to subjective bias masked as passive voice?",
+        options: [
+          "\"Cone penetrometer testing across five trials yielded an average penetration depth of 235 dmm, placing the sample within NLGI Grade 3 tolerances.\"",
+          "\"It is widely felt by the inspection team that the grease sample performed remarkably well under pressure.\"",
+          "\"Obviously, the vendor's formulation is far superior to competing lubricants tested last semester.\"",
+          "\"We believe the laboratory results more or less prove that no further testing is needed.\""
+        ],
+        answer: 0,
+        rationale: "Objectivity relies on verifiable empirical data, precise measurements, and neutral reporting rather than vague qualifiers ('remarkably', 'obviously', 'widely felt')."
+      },
+      {
+        id: 18,
+        difficulty: "Medium",
+        co: "CO03 • Analyze",
+        q: "What is the primary functional difference between the 'Executive Summary' and the 'Introduction' in a formal business or technical report?",
+        options: [
+          "The Executive Summary condenses the entire report—including key findings, conclusions, and recommendations—for busy decision-makers, whereas the Introduction sets out the background, scope, and methodology.",
+          "The Introduction lists the final recommendations first, whereas the Executive Summary only explains why the study was commissioned.",
+          "They are interchangeable terms; a formal report includes one or the other depending on whether a Table of Contents is present.",
+          "The Executive Summary contains raw statistical appendices, whereas the Introduction contains the bibliography."
+        ],
+        answer: 0,
+        rationale: "An Executive Summary stands alone as a miniature synopsis of the whole report (findings + recommendations), while the Introduction establishes context and scope."
+      },
+      {
+        id: 19,
+        difficulty: "Medium",
+        co: "CO03 • Analyze",
+        q: "A quarterly compliance document that records employee attendance metrics, safety audit logs, and budget utilization without diagnosing root causes or proposing policy changes is classified as an:",
+        options: [
+          "Informational Report",
+          "Analytical Report",
+          "Interpretive Research Report",
+          "Feasibility Recommendation Report"
+        ],
+        answer: 0,
+        rationale: "Informational reports present factual accounts and data objectively without analysis, interpretation, or actionable recommendations (which belong to Analytical reports)."
+      },
+      {
+        id: 20,
+        difficulty: "Tough",
+        co: "CO04 • Evaluate",
+        q: "In the 'Elements of Report Writing' (Facts & Evidence → Analysis & Interpretation → Recommendations), what makes a set of Recommendations invalid during a CO04 Peer Review?",
+        options: [
+          "Proposing actionable steps that introduce new assumptions not supported by the preceding 'Facts & Evidence' and 'Analysis' sections.",
+          "Numbering each recommendation sequentially and specifying the department responsible for implementation.",
+          "Deriving practical action items directly from the root causes identified in the analytical section.",
+          "Writing recommendations in clear, concise imperative sentences rather than lengthy narrative paragraphs."
+        ],
+        answer: 0,
+        rationale: "In report architecture, Recommendations must flow logically from the Analysis & Interpretation, which in turn must be grounded strictly in the Facts & Evidence."
+      }
+    ];
+
+    const spotlightQuestions = [
+      {
+        id: "S1",
+        difficulty: "Medium",
+        q: "Name the four sequential steps of Précis Writing outlined in Unit IV, and explain why copying key sentences verbatim from the source passage defeats the purpose of a précis.",
+        rubric: "Steps: Read → Understand → Condense → Rewrite (Slide 6). A précis must be rewritten in the writer's own words to demonstrate true comprehension and synthesis while maintaining brevity, clarity, and accuracy."
+      },
+      {
+        id: "S2",
+        difficulty: "Medium",
+        q: "Explain the four foundational pillars of an effective Paragraph (Unity, Coherence, Order, and Completeness). How can a paragraph have Coherence without having Unity?",
+        rubric: "Unity (one single controlling idea), Coherence (logical flow/transitions), Order (chronological/spatial/logical organization), Completeness (sufficient supporting evidence). A paragraph can use smooth transitions ('moreover', 'therefore') yet drift into an unrelated topic, keeping surface coherence while breaking unity."
+      },
+      {
+        id: "S3",
+        difficulty: "Tough",
+        q: "Walk us through the 7 standard parts of a Business Letter in sequence from top to bottom, and explain the visual layout difference between Full Block, Modified Block, and Semi-Block styles.",
+        rubric: "7 Parts: Heading, Date, Inside Address, Salutation, Body, Complimentary Closing, Signature (Slide 11). Full Block aligns everything left; Modified Block moves Date, Closing, and Signature to the right/center; Semi-Block is like Modified Block but indents the first line of each body paragraph."
+      },
+      {
+        id: "S4",
+        difficulty: "Medium",
+        q: "Suppose your college lab receives a shipment of defective components. According to Unit IV's Complaint Writing framework, what three structural stages should your letter follow, and why must you avoid an angry or threatening tone?",
+        rubric: "Structure: (1) Polite opening referencing the order/invoice, (2) Clear, objective description of the defect/issue, (3) Specific, reasonable request for resolution/replacement (Slide 15). A calm, professional tone preserves business goodwill and achieves faster resolution than hostility."
+      },
+      {
+        id: "S5",
+        difficulty: "Tough",
+        q: "Distinguish between an Informational Report, an Analytical Report, and a Progress Report, and explain how the three core Elements of Report Writing (Facts, Analysis, Recommendations) connect to one another.",
+        rubric: "Informational presents pure facts/status; Analytical evaluates data to solve problems and offer recommendations; Progress tracks ongoing project milestones (Slide 21). Facts/Evidence provide the empirical base → Analysis interprets what those facts mean → Recommendations propose concrete actions derived strictly from that analysis."
+      }
+    ];
+
+    let peer = null;
+    let hostConnection = null;
+    let studentConnections = {};
+
+    let students = {};
+    let currentMCQIndex = -1;
+    let remainingSpotlights = [...spotlightQuestions];
+    let currentSpotlightStudentId = null;
+    let currentSpotlightQuestion = null;
+
+    let audioCtx = null;
+    let sirenOsc = null;
+    let sirenGain = null;
+    let sirenInterval = null;
+
+    function promptHostPin() {
+      if (isHostAuthenticated) {
+        const hostView = document.getElementById("hostView");
+        const studentView = document.getElementById("studentView");
+        if (hostView.classList.contains("hidden")) {
+          hostView.classList.remove("hidden");
+          studentView.classList.add("hidden");
+        } else {
+          hostView.classList.add("hidden");
+          studentView.classList.remove("hidden");
+        }
+        return;
+      }
+      document.getElementById("pinInput").value = "";
+      document.getElementById("pinError").classList.add("hidden");
+      document.getElementById("pinModal").style.display = "flex";
+      document.getElementById("pinInput").focus();
+    }
+
+    function closePinModal() {
+      document.getElementById("pinModal").style.display = "none";
+    }
+
+    function verifyHostPin() {
+      const entered = document.getElementById("pinInput").value.trim();
+      if (entered === SECRET_HOST_PIN) {
+        isHostAuthenticated = true;
+        closePinModal();
+        document.getElementById("hostBtnText").textContent = "Presenter Console (Unlocked)";
+        document.getElementById("studentView").classList.add("hidden");
+        document.getElementById("hostView").classList.remove("hidden");
+        document.getElementById("closeLeaderboardBtn").classList.remove("hidden");
+        initializeHostPeer();
+      } else {
+        document.getElementById("pinError").classList.remove("hidden");
+      }
+    }
+
+    function initializeHostPeer() {
+      if (peer) return;
+      const randomDigits = Math.floor(100 + Math.random() * 900);
+      const roomCode = "UNIT4-" + randomDigits;
+      document.getElementById("hostRoomCodeDisplay").textContent = roomCode;
+
+      peer = new Peer(roomCode, {
+        config: {
+          'iceServers': [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' }
+          ]
+        }
+      });
+
+      peer.on("open", (id) => {
+        const badge = document.getElementById("connectionBadge");
+        badge.textContent = "Hosting Room: " + id;
+        badge.className = "text-xs px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-700 font-semibold";
+      });
+
+      peer.on("connection", (conn) => {
+        conn.on("data", (data) => handleHostIncomingData(conn, data));
+        conn.on("close", () => {
+          delete studentConnections[conn.peer];
+          renderHostStudentList();
+        });
+      });
+    }
+
+    function handleHostIncomingData(conn, data) {
+      if (data.type === "JOIN") {
+        const validation = validateStudentName(data.name);
+        if (!validation.valid) {
+          conn.send({
+            type: "JOIN_REJECTED",
+            reason: validation.reason
+          });
+          setTimeout(() => {
+            try { conn.close(); } catch (e) {}
+          }, 400);
+          return;
+        }
+
+        const cleanDisplayName = validation.cleanName;
+        const incomingNorm = normalizeName(cleanDisplayName);
+
+        const isDuplicate = Object.values(students).some(
+          (existingStudent) => existingStudent.id !== conn.peer && existingStudent.normalizedName === incomingNorm
+        );
+
+        if (isDuplicate) {
+          conn.send({
+            type: "JOIN_REJECTED",
+            reason: `The name "${cleanDisplayName}" has already been taken by another student in this quiz! Please add your surname or roll number.`
+          });
+          setTimeout(() => {
+            try { conn.close(); } catch (e) {}
+          }, 400);
+          return;
+        }
+
+        studentConnections[conn.peer] = conn;
+        students[conn.peer] = {
+          id: conn.peer,
+          name: cleanDisplayName,
+          normalizedName: incomingNorm,
+          answeredCount: 0,
+          correctCount: 0,
+          oralAnswered: 0,
+          currentAnswer: null
+        };
+
+        conn.send({
+          type: "JOIN_ACCEPTED",
+          name: cleanDisplayName
+        });
+
+        renderHostStudentList();
+        updateLiveResponseCount();
+
+        if (currentMCQIndex >= 0 && currentMCQIndex < mcqQuestions.length) {
+          const q = mcqQuestions[currentMCQIndex];
+          conn.send({
+            type: "NEW_MCQ",
+            index: currentMCQIndex,
+            total: mcqQuestions.length,
+            q: q.q,
+            options: q.options
+          });
+        }
+      } else if (data.type === "SUBMIT_MCQ") {
+        const st = students[conn.peer];
+        if (st && st.currentAnswer === null && currentMCQIndex === data.qIndex) {
+          st.currentAnswer = data.choice;
+          st.answeredCount += 1;
+          if (data.choice === mcqQuestions[currentMCQIndex].answer) {
+            st.correctCount += 1;
+          }
+          renderHostStudentList();
+          updateLiveResponseCount();
+        }
+      }
+    }
+
+    function kickStudent(studentId) {
+      const st = students[studentId];
+      if (!st) return;
+      const conn = studentConnections[studentId];
+      if (conn && conn.open) {
+        conn.send({
+          type: "JOIN_REJECTED",
+          reason: "You were removed from the quiz session by the Host."
+        });
+        setTimeout(() => {
+          try { conn.close(); } catch (e) {}
+        }, 300);
+      }
+      delete studentConnections[studentId];
+      delete students[studentId];
+      renderHostStudentList();
+      updateLiveResponseCount();
+    }
+
+    function broadcastToAllStudents(payload) {
+      Object.values(studentConnections).forEach((conn) => {
+        if (conn && conn.open) {
+          conn.send(payload);
+        }
+      });
+    }
+
+    function showStudentJoinMessage(msg, isError = false) {
+      const statusEl = document.getElementById("joinStatusMsg");
+      statusEl.textContent = msg;
+      statusEl.className = isError
+        ? "text-xs text-center px-3 py-2.5 rounded-lg bg-rose-950/80 border border-rose-500/50 text-rose-300 font-semibold block"
+        : "text-xs text-center px-3 py-2 rounded-lg bg-amber-950/50 border border-amber-500/30 text-amber-300 block";
+    }
+
+    function joinQuizAsStudent() {
+      const roomCode = document.getElementById("joinRoomCodeInput").value.trim().toUpperCase();
+      const rawStudentName = document.getElementById("studentNameInput").value;
+      const joinBtn = document.getElementById("joinBtn");
+
+      if (!roomCode) {
+        showStudentJoinMessage("Please enter the Room Code displayed on the projector.", true);
+        return;
+      }
+
+      const nameCheck = validateStudentName(rawStudentName);
+      if (!nameCheck.valid) {
+        showStudentJoinMessage("🚫 " + nameCheck.reason, true);
+        document.getElementById("studentNameInput").focus();
+        return;
+      }
+
+      const studentName = nameCheck.cleanName;
+      initAudioContext();
+
+      if (peer && !isHostAuthenticated) {
+        try { peer.destroy(); } catch (e) {}
+        peer = null;
+      }
+
+      joinBtn.disabled = true;
+      joinBtn.classList.add("opacity-60", "cursor-not-allowed");
+      showStudentJoinMessage("Connecting to Host Room " + roomCode + "...", false);
+
+      peer = new Peer({
+        config: {
+          'iceServers': [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:global.stun.twilio.com:3478' }
+          ]
+        }
+      });
+
+      peer.on("open", () => {
+        hostConnection = peer.connect(roomCode, { reliable: true });
+
+        hostConnection.on("open", () => {
+          hostConnection.send({ type: "JOIN", name: studentName });
+        });
+
+        hostConnection.on("data", (data) => handleStudentIncomingData(data));
+      });
+
+      peer.on("error", () => {
+        joinBtn.disabled = false;
+        joinBtn.classList.remove("opacity-60", "cursor-not-allowed");
+        showStudentJoinMessage("Could not connect to Room Code '" + roomCode + "'. Check code or network.", true);
+      });
+    }
+
+    function handleStudentIncomingData(data) {
+      const joinBtn = document.getElementById("joinBtn");
+
+      if (data.type === "JOIN_REJECTED") {
+        stopSirenSound();
+        document.getElementById("studentWaitCard").classList.add("hidden");
+        document.getElementById("studentQuestionCard").classList.add("hidden");
+        document.getElementById("studentSirenCard").classList.add("hidden");
+        document.getElementById("studentOtherSirenCard").classList.add("hidden");
+        document.getElementById("studentJoinCard").classList.remove("hidden");
+
+        joinBtn.disabled = false;
+        joinBtn.classList.remove("opacity-60", "cursor-not-allowed");
+        showStudentJoinMessage("🚫 " + data.reason, true);
+        document.getElementById("studentNameInput").focus();
+        if (peer && !isHostAuthenticated) {
+          try { peer.destroy(); } catch (e) {}
+          peer = null;
+        }
+        return;
+      }
+
+      if (data.type === "JOIN_ACCEPTED") {
+        const roomCode = document.getElementById("joinRoomCodeInput").value.trim().toUpperCase();
+        document.getElementById("studentJoinCard").classList.add("hidden");
+        document.getElementById("studentWaitCard").classList.remove("hidden");
+        document.getElementById("displayStudentName").textContent = data.name;
+
+        const badge = document.getElementById("connectionBadge");
+        badge.textContent = "Connected to " + roomCode;
+        badge.className = "text-xs px-2.5 py-1 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700";
+        return;
+      }
+
+      stopSirenSound();
+      document.getElementById("studentSirenCard").classList.add("hidden");
+      document.getElementById("studentOtherSirenCard").classList.add("hidden");
+
+      if (data.type === "NEW_MCQ") {
+        document.getElementById("leaderboardSection").classList.add("hidden");
+        document.getElementById("studentWaitCard").classList.add("hidden");
+        document.getElementById("studentQuestionCard").classList.remove("hidden");
+
+        document.getElementById("studentQNumber").textContent = `Question ${data.index + 1} of ${data.total}`;
+        document.getElementById("studentQText").textContent = data.q;
+        document.getElementById("studentAnswerStatus").textContent = "Select the most accurate option";
+
+        const container = document.getElementById("studentOptionsContainer");
+        container.innerHTML = "";
+        data.options.forEach((optText, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-950 hover:border-indigo-500 hover:bg-indigo-950/30 transition text-sm text-slate-200 flex items-start gap-3 active:scale-[0.99]";
+          btn.innerHTML = `<span class="font-bold text-indigo-400">${String.fromCharCode(65 + idx)}.</span> <span>${optText}</span>`;
+          btn.onclick = () => submitStudentMCQ(data.index, idx, btn);
+          container.appendChild(btn);
+        });
+      } else if (data.type === "SIREN_SPOTLIGHT") {
+        document.getElementById("studentWaitCard").classList.add("hidden");
+        document.getElementById("studentQuestionCard").classList.add("hidden");
+
+        if (peer && data.targetId === peer.id) {
+          document.getElementById("studentSirenCard").classList.remove("hidden");
+          document.getElementById("studentSirenQuestion").textContent = data.question;
+          startSirenSound();
+        } else {
+          document.getElementById("studentOtherSirenCard").classList.remove("hidden");
+          document.getElementById("spotlightChosenStudentName").textContent = data.studentName;
+          document.getElementById("otherSirenQuestionText").textContent = data.question;
+        }
+      } else if (data.type === "SHOW_LEADERBOARD") {
+        document.getElementById("studentWaitCard").classList.add("hidden");
+        document.getElementById("studentQuestionCard").classList.add("hidden");
+        renderLeaderboardUI(data.rankings);
+      }
+    }
+
+    let localStudentAnswered = 0;
+    function submitStudentMCQ(qIndex, choiceIndex, clickedBtn) {
+      const container = document.getElementById("studentOptionsContainer");
+      Array.from(container.children).forEach((b) => {
+        b.disabled = true;
+        b.classList.add("opacity-50", "cursor-not-allowed");
+      });
+      clickedBtn.classList.remove("opacity-50");
+      clickedBtn.classList.add("border-indigo-500", "bg-indigo-950/60", "ring-2", "ring-indigo-500/40");
+
+      localStudentAnswered += 1;
+      document.getElementById("studentAnsweredCount").textContent = localStudentAnswered;
+      document.getElementById("studentAnswerStatus").textContent = "✅ Answer Locked! Waiting for presenter...";
+
+      if (hostConnection && hostConnection.open) {
+        hostConnection.send({ type: "SUBMIT_MCQ", qIndex, choice: choiceIndex });
+      }
+    }
+
+    function sendNextMCQ() {
+      if (currentMCQIndex + 1 >= mcqQuestions.length) {
+        alert("All 20 MCQs have been sent! You can trigger remaining Random Device Sirens or click Show Leaderboard.");
+        return;
+      }
+      currentMCQIndex += 1;
+      const q = mcqQuestions[currentMCQIndex];
+
+      Object.values(students).forEach((st) => {
+        st.currentAnswer = null;
+        if (st.isDemo) {
+          if (Math.random() < st.demoParticipationRate) {
+            st.answeredCount += 1;
+            const isCorrect = Math.random() < 0.68;
+            st.currentAnswer = isCorrect ? q.answer : (q.answer + 1) % 4;
+            if (isCorrect) st.correctCount += 1;
+          }
+        }
+      });
+
+      document.getElementById("hostSirenMonitor").classList.add("hidden");
+      document.getElementById("hostQCounter").textContent = `${currentMCQIndex + 1}/20`;
+      document.getElementById("hostActiveQNum").textContent = `Question ${currentMCQIndex + 1} of 20`;
+
+      const diffBadge = document.getElementById("hostDifficultyBadge");
+      diffBadge.classList.remove("hidden");
+      diffBadge.textContent = `${q.difficulty} Difficulty (Hidden)`;
+      diffBadge.className = "text-xs font-bold uppercase px-2.5 py-1 rounded " +
+        (q.difficulty === "Easy" ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" :
+         q.difficulty === "Medium" ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" :
+         "bg-rose-500/20 text-rose-300 border border-rose-500/30");
+
+      const coBadge = document.getElementById("hostCoBadge");
+      coBadge.classList.remove("hidden");
+      coBadge.textContent = q.co;
+
+      document.getElementById("hostActiveQText").textContent = q.q;
+
+      const preview = document.getElementById("hostOptionsPreview");
+      preview.innerHTML = "";
+      q.options.forEach((opt, idx) => {
+        const isCorrect = idx === q.answer;
+        const div = document.createElement("div");
+        div.className = `p-3.5 rounded-xl border text-xs leading-relaxed ${
+          isCorrect ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-200" : "bg-slate-950 border-slate-800 text-slate-300"
+        }`;
+        div.innerHTML = `<strong class="mr-1">${String.fromCharCode(65 + idx)}.</strong> ${opt} ${
+          isCorrect ? '<span class="ml-2 text-[10px] font-extrabold uppercase bg-emerald-500 text-slate-950 px-1.5 py-0.5 rounded">Correct</span>' : ''
+        }`;
+        preview.appendChild(div);
+      });
+
+      const expBox = document.getElementById("hostExplanationBox");
+      expBox.classList.remove("hidden");
+      document.getElementById("hostExplanationText").textContent = q.rationale;
+
+      renderHostStudentList();
+      updateLiveResponseCount();
+
+      broadcastToAllStudents({
+        type: "NEW_MCQ",
+        index: currentMCQIndex,
+        total: mcqQuestions.length,
+        q: q.q,
+        options: q.options
+      });
+    }
+
+    function triggerRandomSiren() {
+      const studentList = Object.values(students);
+      if (studentList.length === 0) {
+        alert("No students connected yet! Ask students to join or click '+12 Demo Classmates' to test.");
+        return;
+      }
+      if (remainingSpotlights.length === 0) {
+        remainingSpotlights = [...spotlightQuestions];
+      }
+
+      const randomStudent = studentList[Math.floor(Math.random() * studentList.length)];
+      const qIdx = Math.floor(Math.random() * remainingSpotlights.length);
+      const chosenQ = remainingSpotlights.splice(qIdx, 1)[0];
+
+      currentSpotlightStudentId = randomStudent.id;
+      currentSpotlightQuestion = chosenQ;
+
+      document.getElementById("hostSirenCounter").textContent = remainingSpotlights.length;
+      document.getElementById("hostSirenMonitor").classList.remove("hidden");
+      document.getElementById("hostSelectedStudentName").textContent = randomStudent.name;
+      document.getElementById("hostSirenDifficulty").textContent = `Difficulty: ${chosenQ.difficulty} (Hidden)`;
+      document.getElementById("hostSirenQText").textContent = chosenQ.q;
+      document.getElementById("hostSirenRubric").textContent = chosenQ.rubric;
+
+      initAudioContext();
+      startSirenSound(1800);
+
+      broadcastToAllStudents({
+        type: "SIREN_SPOTLIGHT",
+        targetId: randomStudent.id,
+        studentName: randomStudent.name,
+        question: chosenQ.q
+      });
+    }
+
+    function gradeOralAnswer(isCorrect) {
+      if (!currentSpotlightStudentId || !students[currentSpotlightStudentId]) return;
+      const st = students[currentSpotlightStudentId];
+      st.answeredCount += 1;
+      st.oralAnswered += 1;
+      if (isCorrect) {
+        st.correctCount += 1;
+      }
+      document.getElementById("hostSirenMonitor").classList.add("hidden");
+      renderHostStudentList();
+    }
+
+    function initAudioContext() {
+      try {
+        if (!audioCtx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) {
+            audioCtx = new AudioContextClass();
+          }
+        }
+        if (audioCtx && audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+      } catch (e) {
+        console.warn("Web Audio API not fully supported.");
+      }
+    }
+
+    function startSirenSound(autoStopMs = 8000) {
+      stopSirenSound();
+      initAudioContext();
+      if (!audioCtx) return;
+
+      try {
+        sirenOsc = audioCtx.createOscillator();
+        sirenGain = audioCtx.createGain();
+        sirenOsc.type = "sawtooth";
+        sirenOsc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        sirenGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+
+        sirenOsc.connect(sirenGain);
+        sirenGain.connect(audioCtx.destination);
+        sirenOsc.start();
+
+        let high = true;
+        sirenInterval = setInterval(() => {
+          if (!sirenOsc || !audioCtx) return;
+          try {
+            sirenOsc.frequency.exponentialRampToValueAtTime(
+              high ? 880 : 440,
+              audioCtx.currentTime + 0.25
+            );
+            high = !high;
+          } catch (err) {}
+        }, 280);
+
+        setTimeout(() => stopSirenSound(), autoStopMs);
+      } catch (e) {
+        console.warn("Audio synthesis restricted.");
+      }
+    }
+
+    function stopSirenSound() {
+      if (sirenInterval) clearInterval(sirenInterval);
+      if (sirenOsc) {
+        try { sirenOsc.stop(); sirenOsc.disconnect(); } catch (e) {}
+        sirenOsc = null;
+      }
+    }
+
+    function broadcastLeaderboard() {
+      const rankings = Object.values(students).sort((a, b) => {
+        if (b.answeredCount !== a.answeredCount) return b.answeredCount - a.answeredCount;
+        return b.correctCount - a.correctCount;
+      });
+
+      renderLeaderboardUI(rankings);
+      broadcastToAllStudents({
+        type: "SHOW_LEADERBOARD",
+        rankings
+      });
+    }
+
+    function renderLeaderboardUI(rankings) {
+      document.getElementById("leaderboardSection").classList.remove("hidden");
+      const top10El = document.getElementById("top10Container");
+      const fullEl = document.getElementById("fullRankingContainer");
+      top10El.innerHTML = "";
+      fullEl.innerHTML = "";
+
+      if (rankings.length === 0) {
+        top10El.innerHTML = `<p class="text-xs text-slate-500">No student data available yet.</p>`;
+        return;
+      }
+
+      rankings.slice(0, 10).forEach((st, idx) => {
+        const medal = idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`;
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs";
+        row.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="font-extrabold text-sm w-6 text-center text-emerald-400">${medal}</span>
+            <div>
+              <span class="font-bold text-white block">${st.name}</span>
+              <span class="text-[11px] text-slate-400">Correct: ${st.correctCount} • Oral Spotlight: ${st.oralAnswered || 0}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold">
+              ${st.answeredCount} Answered
+            </span>
+          </div>
+        `;
+        top10El.appendChild(row);
+      });
+
+      rankings.forEach((st, idx) => {
+        const isLeast = idx === rankings.length - 1 && rankings.length > 1;
+        const row = document.createElement("div");
+        row.className = `flex items-center justify-between p-2.5 rounded-lg border text-xs ${
+          isLeast ? "bg-rose-950/30 border-rose-500/40" : "bg-slate-900/60 border-slate-800/80"
+        }`;
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5">
+            <span class="font-mono text-slate-400 w-6">#${idx + 1}</span>
+            <span class="font-semibold text-slate-200">${st.name}</span>
+            ${isLeast ? '<span class="text-[10px] uppercase font-bold bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded">Least Answered</span>' : ''}
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-slate-400">Score: <strong class="text-white">${st.correctCount}</strong></span>
+            <span class="font-bold ${isLeast ? 'text-rose-400' : 'text-indigo-400'}">${st.answeredCount} Qs Answered</span>
+          </div>
+        `;
+        fullEl.appendChild(row);
+      });
+    }
+
+    function hideLeaderboard() {
+      document.getElementById("leaderboardSection").classList.add("hidden");
+    }
+
+    function renderHostStudentList() {
+      const listEl = document.getElementById("hostStudentList");
+      const arr = Object.values(students);
+      document.getElementById("connectedCountBadge").textContent = `${arr.length} joined`;
+
+      if (arr.length === 0) {
+        listEl.innerHTML = `<p class="text-slate-500 text-center py-8">No devices joined yet.</p>`;
+        return;
+      }
+
+      listEl.innerHTML = "";
+      arr.forEach((st) => {
+        const hasAnsweredCurrent = st.currentAnswer !== null;
+        const item = document.createElement("div");
+        item.className = "flex items-center justify-between p-2.5 rounded-lg bg-slate-950 border border-slate-800 gap-2";
+        item.innerHTML = `
+          <div class="flex items-center gap-2 truncate">
+            <span class="w-2 h-2 rounded-full shrink-0 ${hasAnsweredCurrent ? 'bg-emerald-400' : 'bg-amber-400'}"></span>
+            <span class="font-semibold text-slate-200 truncate">${st.name}</span>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px] text-slate-400">
+              Ans: <strong class="text-indigo-300">${st.answeredCount}</strong> | Pts: <strong class="text-emerald-300">${st.correctCount}</strong>
+            </span>
+            <button onclick="kickStudent('${st.id}')" title="Kick student" class="text-[10px] bg-rose-950/70 hover:bg-rose-600 text-rose-300 hover:text-white px-2 py-0.5 rounded border border-rose-500/30 transition">
+              ✕
+            </button>
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+    }
+
+    function updateLiveResponseCount() {
+      const arr = Object.values(students);
+      const answeredCurrent = arr.filter((s) => s.currentAnswer !== null).length;
+      document.getElementById("hostLiveResponsesCount").textContent = `${answeredCurrent} / ${arr.length} Answered Current Q`;
+    }
+
+    function addDemoStudents() {
+      const demoNames = [
+        "Aarav Sharma", "Diya Patel", "Rohan Verma", "Ananya Nair",
+        "Kabir Mehta", "Sneha Iyer", "Vikram Rathore", "Neha Gupta",
+        "Aditya Joshi", "Pooja Charan", "Karan Singhania", "Meera Krishnan"
+      ];
+      demoNames.forEach((name, i) => {
+        const norm = normalizeName(name);
+        const alreadyExists = Object.values(students).some((s) => s.normalizedName === norm);
+        if (alreadyExists) return;
+
+        const id = "demo-" + (i + 1);
+        const participationRate = Math.max(0.25, 1 - (i * 0.06));
+        const initialAnswered = currentMCQIndex >= 0 ? Math.round((currentMCQIndex + 1) * participationRate) : 0;
+        const initialCorrect = Math.round(initialAnswered * 0.7);
+        students[id] = {
+          id,
+          name,
+          normalizedName: norm,
+          isDemo: true,
+          demoParticipationRate: participationRate,
+          answeredCount: initialAnswered,
+          correctCount: initialCorrect,
+          oralAnswered: 0,
+          currentAnswer: currentMCQIndex >= 0 ? 0 : null
+        };
+      });
+      renderHostStudentList();
+      updateLiveResponseCount();
+    }
+  </script>
+</body>
+</html>
