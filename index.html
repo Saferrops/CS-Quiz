@@ -40,7 +40,7 @@
   </header>
 
   <!-- PIN MODAL FOR HOST ACCESS -->
-  <div id="pinModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+  <div id="pinModal" style="display: none;" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50 p-4">
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
       <h3 class="text-lg font-bold text-white mb-1">Presenter Authentication</h3>
       <p class="text-xs text-slate-400 mb-4">Enter your secret Host PIN to unlock the Presenter Console and create the live room.</p>
@@ -63,7 +63,7 @@
       <!-- 1. STUDENT JOIN CARD -->
       <div id="studentJoinCard" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
         <h2 class="text-xl font-bold text-white mb-1">Join Live Classroom Quiz</h2>
-        <p class="text-xs text-slate-400 mb-5">Enter the Room Code displayed on the projector and your real Full Name or Roll Number. Works on all modern & legacy mobile browsers.</p>
+        <p class="text-xs text-slate-400 mb-5">Enter the Room Code displayed on the projector and your real Full Name or Roll Number. Works on all modern mobile browsers.</p>
         
         <div class="space-y-4">
           <div>
@@ -276,9 +276,6 @@
   </main>
 
   <script>
-    // ================================================================
-    // 1. SECRET HOST PIN & STRICT PROFANITY / EXPLICIT NAME FILTER
-    // ================================================================
     const SECRET_HOST_PIN = "2026";
     let isHostAuthenticated = false;
 
@@ -348,8 +345,8 @@
 
       const collapsedNoSpaces = leetNormalized
         .replace(/[^a-z]/g, "")
-        .replace(/(.){2,}/g, "$1$1");
-      const strictDeduped = collapsedNoSpaces.replace(/(.)+/g, "$1");
+        .replace(/(.)\1{2,}/g, "$1$1");
+      const strictDeduped = collapsedNoSpaces.replace(/(.)\1+/g, "$1");
       const rawAlphaOnly = clean.toLowerCase().replace(/[^a-z]/g, "");
 
       for (const badWord of BLOCKED_SUBSTRINGS) {
@@ -380,9 +377,6 @@
       return { valid: true, cleanName: clean };
     }
 
-    // ================================================================
-    // 2. UNIT IV: 20 NUANCED MCQs (ANSWER KEY & RATIONALE)
-    // ================================================================
     const mcqQuestions = [
       {
         id: 1,
@@ -418,10 +412,10 @@
         co: "CO02 • Apply/Analyze",
         q: "Which revision best demonstrates the Unit IV principle of Functional Grammar & Formal Vocabulary without sliding into stiff, archaic legalese?",
         options: [
-          ""Please review the attached quarterly expenditure breakdown and share your approval by Friday."",
-          ""Hereby find enclosed herewith the aforementioned expenditure figures for your esteemed perusal."",
-          ""Just dropping the quarterly spend numbers here—let me know if we're good to go by Friday."",
-          ""Pursuant to our prior verbal discourse, the monetary outlays have been compiled for ratification.""
+          "\"Please review the attached quarterly expenditure breakdown and share your approval by Friday.\"",
+          "\"Hereby find enclosed herewith the aforementioned expenditure figures for your esteemed perusal.\"",
+          "\"Just dropping the quarterly spend numbers here—let me know if we're good to go by Friday.\"",
+          "\"Pursuant to our prior verbal discourse, the monetary outlays have been compiled for ratification.\""
         ],
         answer: 0,
         rationale: "Professional writing balances formal vocabulary and grammatical accuracy with plain, clear, modern conciseness—avoiding both casual slang and archaic clichés."
@@ -614,10 +608,10 @@
         co: "CO04 • Evaluate",
         q: "In Report Writing, which sentence demonstrates true 'Objectivity' (a core feature of a good report) as opposed to subjective bias masked as passive voice?",
         options: [
-          ""Cone penetrometer testing across five trials yielded an average penetration depth of 235 dmm, placing the sample within NLGI Grade 3 tolerances."",
-          ""It is widely felt by the inspection team that the grease sample performed remarkably well under pressure."",
-          ""Obviously, the vendor's formulation is far superior to competing lubricants tested last semester."",
-          ""We believe the laboratory results more or less prove that no further testing is needed.""
+          "\"Cone penetrometer testing across five trials yielded an average penetration depth of 235 dmm, placing the sample within NLGI Grade 3 tolerances.\"",
+          "\"It is widely felt by the inspection team that the grease sample performed remarkably well under pressure.\"",
+          "\"Obviously, the vendor's formulation is far superior to competing lubricants tested last semester.\"",
+          "\"We believe the laboratory results more or less prove that no further testing is needed.\""
         ],
         answer: 0,
         rationale: "Objectivity relies on verifiable empirical data, precise measurements, and neutral reporting rather than vague qualifiers ('remarkably', 'obviously', 'widely felt')."
@@ -666,9 +660,6 @@
       }
     ];
 
-    // ================================================================
-    // 3. UNIT IV: 5 NON-MCQ ORAL SPOTLIGHT QUESTIONS (RUBRICS)
-    // ================================================================
     const spotlightQuestions = [
       {
         id: "S1",
@@ -702,9 +693,6 @@
       }
     ];
 
-    // ================================================================
-    // 4. REAL-TIME STATE & PEERJS NETWORKING
-    // ================================================================
     let peer = null;
     let hostConnection = null;
     let studentConnections = {};
@@ -715,15 +703,11 @@
     let currentSpotlightStudentId = null;
     let currentSpotlightQuestion = null;
 
-    // Web Audio API Siren State
     let audioCtx = null;
     let sirenOsc = null;
     let sirenGain = null;
     let sirenInterval = null;
 
-    // ================================================================
-    // 5. HOST PIN AUTHENTICATION
-    // ================================================================
     function promptHostPin() {
       if (isHostAuthenticated) {
         const hostView = document.getElementById("hostView");
@@ -739,14 +723,12 @@
       }
       document.getElementById("pinInput").value = "";
       document.getElementById("pinError").classList.add("hidden");
-      document.getElementById("pinModal").classList.remove("hidden");
-      document.getElementById("pinModal").classList.add("flex");
+      document.getElementById("pinModal").style.display = "flex";
       document.getElementById("pinInput").focus();
     }
 
     function closePinModal() {
-      document.getElementById("pinModal").classList.add("hidden");
-      document.getElementById("pinModal").classList.remove("flex");
+      document.getElementById("pinModal").style.display = "none";
     }
 
     function verifyHostPin() {
@@ -764,16 +746,12 @@
       }
     }
 
-    // ================================================================
-    // 6. PEERJS HOST INITIALIZATION & BACKWARD COMPATIBLE FALLBACK
-    // ================================================================
     function initializeHostPeer() {
       if (peer) return;
       const randomDigits = Math.floor(100 + Math.random() * 900);
       const roomCode = "UNIT4-" + randomDigits;
       document.getElementById("hostRoomCodeDisplay").textContent = roomCode;
 
-      // PeerJS with robust public STUN fallback ensuring compatibility across mobile carriers & older web versions
       peer = new Peer(roomCode, {
         config: {
           'iceServers': [
@@ -900,9 +878,6 @@
       });
     }
 
-    // ================================================================
-    // 7. STUDENT JOIN & BACKWARD COMPATIBLE WEBRTC CONNECTION
-    // ================================================================
     function showStudentJoinMessage(msg, isError = false) {
       const statusEl = document.getElementById("joinStatusMsg");
       statusEl.textContent = msg;
@@ -1011,13 +986,12 @@
 
         document.getElementById("studentQNumber").textContent = `Question ${data.index + 1} of ${data.total}`;
         document.getElementById("studentQText").textContent = data.q;
-        document.getElementById("studentAnswerStatus").textContent = "Tap one option to lock your answer";
+        document.getElementById("studentAnswerStatus").textContent = "Select the most accurate option";
 
         const container = document.getElementById("studentOptionsContainer");
         container.innerHTML = "";
         data.options.forEach((optText, idx) => {
           const btn = document.createElement("button");
-          // Designed with large touch targets for easy mobile interaction
           btn.className = "w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-950 hover:border-indigo-500 hover:bg-indigo-950/30 transition text-sm text-slate-200 flex items-start gap-3 active:scale-[0.99]";
           btn.innerHTML = `<span class="font-bold text-indigo-400">${String.fromCharCode(65 + idx)}.</span> <span>${optText}</span>`;
           btn.onclick = () => submitStudentMCQ(data.index, idx, btn);
@@ -1062,9 +1036,6 @@
       }
     }
 
-    // ================================================================
-    // 8. HOST CONTROLS
-    // ================================================================
     function sendNextMCQ() {
       if (currentMCQIndex + 1 >= mcqQuestions.length) {
         alert("All 20 MCQs have been sent! You can trigger remaining Random Device Sirens or click Show Leaderboard.");
@@ -1180,9 +1151,6 @@
       renderHostStudentList();
     }
 
-    // ================================================================
-    // 9. ROBUST WEB AUDIO API SYNTHESIZER (CROSS-BROWSER COMPATIBLE)
-    // ================================================================
     function initAudioContext() {
       try {
         if (!audioCtx) {
@@ -1195,7 +1163,7 @@
           audioCtx.resume();
         }
       } catch (e) {
-        console.warn("Web Audio API not fully supported on this legacy browser.");
+        console.warn("Web Audio API not fully supported.");
       }
     }
 
@@ -1241,9 +1209,6 @@
       }
     }
 
-    // ================================================================
-    // 10. LEADERBOARD (TOP 10 TO LEAST)
-    // ================================================================
     function broadcastLeaderboard() {
       const rankings = Object.values(students).sort((a, b) => {
         if (b.answeredCount !== a.answeredCount) return b.answeredCount - a.answeredCount;
@@ -1315,9 +1280,6 @@
       document.getElementById("leaderboardSection").classList.add("hidden");
     }
 
-    // ================================================================
-    // 11. HELPER UI & DEMO GENERATOR
-    // ================================================================
     function renderHostStudentList() {
       const listEl = document.getElementById("hostStudentList");
       const arr = Object.values(students);
